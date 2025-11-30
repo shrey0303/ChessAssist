@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ChessAssist</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Login Section -->
+    <div id="loginSection" class="section">
+      <h1>ChessAssist</h1>
+      <p>Authenticate with Lichess</p>
+      
+      <div class="auth-options">
+        <button id="lichessBtn" class="btn auth-btn lichess-btn">
+          <span class="platform-icon">♞</span> Login with Lichess
+        </button>
+      </div>
+      
+      <p class="auth-note">We'll fetch your games to train our AI model</p>
+    </div>
+
+    <!-- Main Section (shown after login) -->
+    <div id="mainSection" class="section" style="display: none;">
+      <h1>ChessAssist</h1>
+      <p id="userGreeting">Welcome!</p>
+      
+      <button id="analyzeCurrentBtn" class="btn">Analyze Current Game</button>
+      <button id="analyzeBtn" class="btn">Analyze Position</button>
+      <button id="logoutBtn" class="btn secondary">Logout</button>
+      
+      <!-- Analysis Results -->
+      <div id="analysisResults" style="display: none; margin-top: 20px;">
+        <div class="analysis-box">
+          <h3>Analysis Results</h3>
+          <p id="bestMoveDisplay"></p>
+          <p id="evaluationDisplay"></p>
+          <p id="statusDisplay"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div id="loadingSpinner" class="loading" style="display: none;">
+    <div class="spinner"></div>
+    <p>Authenticating...</p>
+  </div>
+
+  <script src="../js/stockfish.js"></script>
+  <script src="../js/popup.js"></script>
+</body>
+</html>
