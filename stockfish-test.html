@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ChessAssist - Stockfish Integration Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 32px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        
+        .test-card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .test-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #764ba2;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #663a8c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(118, 75, 162, 0.4);
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .result-item {
+            padding: 8px 0;
+            color: #555;
+            font-size: 13px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.loading {
+            background: #cfe2ff;
+            color: #084298;
+            border: 1px solid #b6d4fe;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .summary {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            margin-top: 20px;
+        }
+        
+        .summary h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .summary-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        
+        .summary-label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .summary-value {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .checklist li {
+            padding: 8px 0;
+            color: #555;
+        }
+        
+        .checklist li:before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .checklist li.pending:before {
+            content: "○ ";
+            color: #ffc107;
+        }
+        
+        .checklist li.error:before {
+            content: "✗ ";
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 ChessAssist - Stockfish Integration Test</h1>
+        
+        <div class="test-grid">
+            <!-- Test 1: Lichess User Fetch -->
+            <div class="test-card">
+                <h2>1️⃣ Fetch Lichess User</h2>
+                <p>Verify that we can fetch user profile data from Lichess API</p>
+                <div class="input-group">
+                    <input type="text" id="userInput" placeholder="Enter Lichess username (e.g., botvinnik)" value="botvinnik">
+                </div>
+                <button class="btn-primary" onclick="testFetchUser()">Fetch User</button>
+                <div id="userResult" class="result" style="display: none;">
+                    <div class="result-title">User Data:</div>
+                </div>
+            </div>
+            
+            <!-- Test 2: Fetch Current Game -->
+            <div class="test-card">
+                <h2>2️⃣ Fetch Current Game</h2>
+                <p>Check if user has an active game (requires username with ongoing game)</p>
+                <div class="input-group">
+                    <input type="text" id="gameUserInput" placeholder="Enter Lichess username" value="">
+                </div>
+                <button class="btn-primary" onclick="testCurrentGame()">Fetch Current Game</button>
+                <div id="gameResult" class="result" style="display: none;">
+                    <div class="result-title">Game Data:</div>
+                </div>
+            </div>
+            
+            <!-- Test 3: Stockfish Analysis -->
+            <div class="test-card">
+                <h2>3️⃣ Stockfish Analysis</h2>
+                <p>Test Stockfish API with a custom FEN position</p>
+                <div class="input-group">
+                    <input type="text" id="fenInput" placeholder="Enter FEN position" value="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1">
+                </div>
+                <div class="input-group">
+                    <label>Depth (1-20):</label>
+                    <input type="number" id="depthInput" min="1" max="20" value="6">
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="testStockfishAPI()">Analyze Position</button>
+                    <button class="btn-secondary" onclick="testStockfishDirect()">Direct API Test</button>
+                </div>
+                <div id="stockfishResult" class="result" style="display: none;">
+                    <div class="result-title">Analysis:</div>
+                </div>
+            </div>
+            
+            <!-- Test 4: Past Games Fetch -->
+            <div class="test-card">
+                <h2>4️⃣ Fetch Past Games</h2>
+                <p>Fetch user's past games for model training</p>
+                <div class="input-group">
+                    <input type="text" id="trainingUserInput" placeholder="Enter Lichess username" value="botvinnik">
+                </div>
+                <div class="input-group">
+                    <label>Max Games:</label>
+                    <input type="number" id="maxGamesInput" min="1" max="300" value="10">
+                </div>
+                <button class="btn-primary" onclick="testTrainingData()">Fetch Games</button>
+                <div id="trainingResult" class="result" style="display: none;">
+                    <div class="result-title">Training Data:</div>
+                </div>
+            </div>
+            
+            <!-- Test 5: Full Integration Test -->
+            <div class="test-card">
+                <h2>5️⃣ Full Integration Test</h2>
+                <p>Simulate complete workflow: Auth → Current Game → Analysis</p>
+                <div class="input-group">
+                    <input type="text" id="integrationUserInput" placeholder="Enter Lichess username" value="">
+                </div>
+                <button class="btn-secondary" onclick="testFullIntegration()">Run Full Test</button>
+                <div id="integrationResult" class="result" style="display: none;">
+                    <div class="result-title">Integration Test Progress:</div>
+                </div>
+            </div>
+            
+            <!-- Test 6: API Status -->
+            <div class="test-card">
+                <h2>🔗 API Status Check</h2>
+                <p>Verify all external APIs are reachable</p>
+                <button class="btn-primary" onclick="checkAPIStatus()">Check All APIs</button>
+                <div id="statusResult" class="result" style="display: none;">
+                    <div class="result-title">API Status:</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Summary Section -->
+        <div class="summary">
+            <h2>✅ Pre-Installation Checklist</h2>
+            <ul class="checklist">
+                <li id="check1" class="pending">Lichess API accessible</li>
+                <li id="check2" class="pending">Stockfish API accessible</li>
+                <li id="check3" class="pending">User authentication works</li>
+                <li id="check4" class="pending">Current game can be fetched</li>
+                <li id="check5" class="pending">Position analysis works</li>
+                <li id="check6" class="pending">Training data can be fetched</li>
+            </ul>
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
+                <h3 style="color: #333; margin-bottom: 10px;">Real-Time Gameplay Testing Instructions:</h3>
+                <ol style="color: #666; line-height: 1.8;">
+                    <li>Install the extension in Chrome (chrome://extensions/)</li>
+                    <li>Go to any Lichess game (play.lichess.org)</li>
+                    <li>Click the ChessAssist extension icon</li>
+                    <li>Login with your Lichess username</li>
+                    <li>Click "Analyze Current Game" button</li>
+                    <li>See real-time suggestions appear!</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/stockfish.js"></script>
+    <script src="js/gamedata.js"></script>
+    <script>
+        // Test Functions
+        
+        function addLog(elementId, message, isError = false) {
+            const result = document.getElementById(elementId);
+            if (result.style.display === 'none') {
+                result.style.display = 'block';
+            }
+            
+            const item = document.createElement('div');
+            item.className = 'result-item';
+            item.textContent = (isError ? '✗ ' : '✓ ') + message;
+            item.style.color = isError ? '#dc3545' : '#666';
+            result.appendChild(item);
+        }
+        
+        function clearResult(elementId) {
+            const result = document.getElementById(elementId);
+            result.innerHTML = '<div class="result-title">Result:</div>';
+        }
+        
+        function setStatus(elementId, message, type) {
+            const result = document.getElementById(elementId);
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            
+            if (type === 'loading') {
+                status.innerHTML = '<span class="spinner"></span>' + message;
+            } else {
+                status.textContent = message;
+            }
+            
+            result.appendChild(status);
+        }
+        
+        async function testFetchUser() {
+            const username = document.getElementById('userInput').value.trim();
+            if (!username) {
+                alert('Enter a username');
+                return;
+            }
+            
+            clearResult('userResult');
+            setStatus('userResult', 'Fetching user data...', 'loading');
+            
+            try {
+                const response = await fetch(`https://lichess.org/api/user/${username}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                addLog('userResult', `Username: ${data.username}`);
+                addLog('userResult', `Rating (Blitz): ${data.perfs?.blitz?.rating || 'N/A'}`);
+                addLog('userResult', `Total Games: ${data.nbPlayed}`);
+                addLog('userResult', `Followers: ${data.nbFollowers}`);
+                addLog('userResult', `Last Seen: ${new Date(data.seenAt).toLocaleString()}`);
+                
+                setStatus('userResult', '✓ User data fetched successfully!', 'success');
+                updateCheck('check1');
+            } catch (error) {
+                addLog('userResult', error.message, true);
+                setStatus('userResult', '✗ Failed to fetch user', 'error');
+            }
+        }
+        
+        async function testCurrentGame() {
+            const username = document.getElementById('gameUserInput').value.trim();
+            if (!username) {
+                alert('Enter a username');
+                return;
+            }
+            
+            clearResult('gameResult');
+            setStatus('gameResult', 'Fetching current game...', 'loading');
+            
+            try {
+                const response = await fetch(`https://lichess.org/api/user/${username}/current-game`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (!response.ok) throw new Error(`No active game (HTTP ${response.status})`);
+                
+                const data = await response.json();
+                
+                addLog('gameResult', `Game ID: ${data.game?.id}`);
+                addLog('gameResult', `Status: ${data.game?.status}`);
+                addLog('gameResult', `Moves: ${data.game?.moves || 'Game starting'}`);
+                addLog('gameResult', `FEN: ${data.game?.fen?.substring(0, 30)}...`);
+                
+                setStatus('gameResult', '✓ Current game found!', 'success');
+                updateCheck('check4');
+            } catch (error) {
+                addLog('gameResult', error.message, true);
+                setStatus('gameResult', '✗ No active game or error occurred', 'error');
+            }
+        }
+        
+        async function testStockfishAPI() {
+            const fen = document.getElementById('fenInput').value.trim();
+            const depth = parseInt(document.getElementById('depthInput').value);
+            
+            if (!fen) {
+                alert('Enter a FEN position');
+                return;
+            }
+            
+            clearResult('stockfishResult');
+            setStatus('stockfishResult', 'Analyzing position (this may take a moment)...', 'loading');
+            
+            try {
+                const analysis = await analyzePositionWithStockfish(fen, depth);
+                
+                addLog('stockfishResult', `Best Move: ${analysis.bestMove || 'N/A'}`);
+                if (analysis.score && analysis.score.type === 'mate') {
+                    addLog('stockfishResult', `Evaluation: Mate in ${analysis.score.moves}`);
+                } else if (analysis.score) {
+                    addLog('stockfishResult', `Evaluation: ${analysis.score.eval} (pawns)`);
+                } else {
+                    addLog('stockfishResult', `Evaluation: ${analysis.evaluation || 'N/A'}`);
+                }
+                addLog('stockfishResult', `Depth: ${analysis.depth}`);
+                
+                setStatus('stockfishResult', '✓ Position analyzed successfully!', 'success');
+                updateCheck('check2');
+                updateCheck('check5');
+            } catch (error) {
+                addLog('stockfishResult', error.message, true);
+                setStatus('stockfishResult', '✗ Analysis failed', 'error');
+            }
+        }
+        
+        async function testStockfishDirect() {
+            const fen = document.getElementById('fenInput').value.trim();
+            const depth = parseInt(document.getElementById('depthInput').value);
+            
+            if (!fen) {
+                alert('Enter a FEN position');
+                return;
+            }
+            
+            clearResult('stockfishResult');
+            setStatus('stockfishResult', 'Making direct API call...', 'loading');
+            
+            try {
+                const params = new URLSearchParams({
+                    fen: fen,
+                    depth: Math.min(depth, 20)
+                });
+                
+                const url = `https://stockfish.online/api/s/v2.php?${params.toString()}`;
+                console.log('Direct URL:', url);
+                addLog('stockfishResult', `URL: ${url}`);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                console.log('Direct API Response:', data);
+                addLog('stockfishResult', `Status: ${response.status}`);
+                addLog('stockfishResult', `Raw Response: ${JSON.stringify(data).substring(0, 200)}`);
+                
+                if (data.bestmove) {
+                    addLog('stockfishResult', `✓ Best Move: ${data.bestmove}`);
+                }
+                if (data.evaluation) {
+                    addLog('stockfishResult', `Evaluation: ${data.evaluation}`);
+                }
+                
+                setStatus('stockfishResult', '✓ Direct API test complete!', 'success');
+            } catch (error) {
+                addLog('stockfishResult', error.message, true);
+                setStatus('stockfishResult', '✗ Direct test failed', 'error');
+            }
+        }
+        
+        async function testTrainingData() {
+            const username = document.getElementById('trainingUserInput').value.trim();
+            const maxGames = parseInt(document.getElementById('maxGamesInput').value);
+            
+            if (!username) {
+                alert('Enter a username');
+                return;
+            }
+            
+            clearResult('trainingResult');
+            setStatus('trainingResult', 'Fetching training data...', 'loading');
+            
+            try {
+                const trainingData = await getTrainingDataset(username, maxGames);
+                
+                addLog('trainingResult', `Total Games: ${trainingData.games.length}`);
+                addLog('trainingResult', `Win Rate: ${trainingData.statistics.winRate}`);
+                addLog('trainingResult', `Avg Opponent Rating: ${trainingData.statistics.averageOpponentRating}`);
+                
+                const speedStats = Object.entries(trainingData.statistics.bySpeed)
+                    .map(([k, v]) => `${k}: ${v}`).join(', ');
+                addLog('trainingResult', `Games by Speed: ${speedStats}`);
+                
+                setStatus('trainingResult', '✓ Training data fetched successfully!', 'success');
+                updateCheck('check6');
+            } catch (error) {
+                addLog('trainingResult', error.message, true);
+                setStatus('trainingResult', '✗ Failed to fetch training data', 'error');
+            }
+        }
+        
+        async function testFullIntegration() {
+            const username = document.getElementById('integrationUserInput').value.trim();
+            if (!username) {
+                alert('Enter a username');
+                return;
+            }
+            
+            clearResult('integrationResult');
+            
+            addLog('integrationResult', 'Step 1: Fetching user profile...');
+            
+            try {
+                // Step 1: Fetch user
+                const userResp = await fetch(`https://lichess.org/api/user/${username}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!userResp.ok) throw new Error('User not found');
+                const userData = await userResp.json();
+                addLog('integrationResult', `✓ User authenticated: ${userData.username}`);
+                
+                // Step 2: Fetch current game
+                addLog('integrationResult', 'Step 2: Checking for active game...');
+                const gameResp = await fetch(`https://lichess.org/api/user/${username}/current-game`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (!gameResp.ok) {
+                    addLog('integrationResult', 'ℹ No active game found (using test position)', false);
+                    
+                    // Use a test position instead
+                    const testFEN = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1';
+                    addLog('integrationResult', 'Step 3: Analyzing test position...');
+                    
+                    const analysis = await analyzePositionWithStockfish(testFEN, 6);
+                    addLog('integrationResult', `✓ Position analyzed`);
+                    addLog('integrationResult', `Best Move: ${analysis.bestMove}`);
+                    addLog('integrationResult', `Evaluation: ${analysis.score.eval}`);
+                } else {
+                    const gameData = await gameResp.json();
+                    addLog('integrationResult', `✓ Active game found: ${gameData.game?.id}`);
+                    
+                    // Step 3: Analyze current position
+                    addLog('integrationResult', 'Step 3: Analyzing current position...');
+                    const fen = gameData.game?.fen;
+                    
+                    if (fen) {
+                        const analysis = await analyzePositionWithStockfish(fen, 6);
+                        addLog('integrationResult', `✓ Position analyzed`);
+                        addLog('integrationResult', `Best Move: ${analysis.bestMove}`);
+                        addLog('integrationResult', `Evaluation: ${analysis.score.eval}`);
+                    }
+                }
+                
+                setStatus('integrationResult', '✓ Full integration test completed!', 'success');
+                updateCheck('check3');
+            } catch (error) {
+                addLog('integrationResult', error.message, true);
+                setStatus('integrationResult', '✗ Integration test failed', 'error');
+            }
+        }
+        
+        async function checkAPIStatus() {
+            clearResult('statusResult');
+            setStatus('statusResult', 'Checking APIs...', 'loading');
+            
+            const apis = [
+                { name: 'Lichess API', url: 'https://lichess.org/api/account', header: 'application/json' },
+                { name: 'Stockfish API', url: 'https://stockfish.online/api/s/v2.php?fen=rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1&depth=1', header: 'application/json' }
+            ];
+            
+            for (const api of apis) {
+                try {
+                    const response = await fetch(api.url, {
+                        headers: { 'Accept': api.header },
+                        method: 'GET'
+                    });
+                    addLog('statusResult', `${api.name}: ${response.ok ? 'Online' : 'HTTP ' + response.status}`);
+                } catch (error) {
+                    addLog('statusResult', `${api.name}: Offline (${error.message})`, true);
+                }
+            }
+            
+            setStatus('statusResult', '✓ API check complete!', 'success');
+        }
+        
+        function updateCheck(checkId) {
+            const element = document.getElementById(checkId);
+            element.classList.remove('pending');
+            element.classList.add('success');
+        }
+    </script>
+</body>
+</html>

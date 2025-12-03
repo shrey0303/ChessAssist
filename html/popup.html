@@ -9,46 +9,69 @@
   <div class="container">
     <!-- Login Section -->
     <div id="loginSection" class="section">
-      <h1>ChessAssist</h1>
-      <p>Authenticate with Lichess</p>
+      <h1>♞ ChessAssist</h1>
+      <p>Real-time Chess Analysis with Stockfish</p>
       
-      <div class="auth-options">
-        <button id="lichessBtn" class="btn auth-btn lichess-btn">
-          <span class="platform-icon">♞</span> Login with Lichess
+      <div class="auth-form">
+        <p><strong>Step 1:</strong> Get your Lichess token</p>
+        <a href="https://lichess.org/account/oauth/token" target="_blank" class="btn">
+          Get Lichess Token
+        </a>
+        
+        <p style="margin-top: 15px;"><strong>Step 2:</strong> Paste token below</p>
+        <input 
+          type="password" 
+          id="tokenInput" 
+          placeholder="lichess_xxxxxxxxxxxxxxxxxxxx"
+          style="width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px;"
+        >
+        <button id="setTokenBtn" class="btn lichess-btn">
+          <span>✓</span> Set Token & Start Monitoring
         </button>
       </div>
       
-      <p class="auth-note">We'll fetch your games to train our AI model</p>
+      <p class="auth-note">
+        <small>Your token is stored locally and only used to connect to Lichess API</small>
+      </p>
     </div>
 
-    <!-- Main Section (shown after login) -->
+    <!-- Main Section (shown after token is set) -->
     <div id="mainSection" class="section" style="display: none;">
-      <h1>ChessAssist</h1>
-      <p id="userGreeting">Welcome!</p>
+      <h1>♞ ChessAssist</h1>
+      <p id="userGreeting" style="color: #667eea; margin-bottom: 15px;">Connected to Lichess</p>
       
-      <button id="analyzeCurrentBtn" class="btn">Analyze Current Game</button>
-      <button id="analyzeBtn" class="btn">Analyze Position</button>
-      <button id="logoutBtn" class="btn secondary">Logout</button>
+      <div style="margin-bottom: 15px;">
+        <button id="startMonitorBtn" class="btn" style="margin-right: 5px;">▶ Start Monitoring</button>
+        <button id="stopMonitorBtn" class="btn secondary" style="margin-right: 5px;">⏹ Stop Monitoring</button>
+        <button id="logoutBtn" class="btn secondary">Logout</button>
+      </div>
+      
+      <!-- Game Info -->
+      <div id="gameInfo" style="margin: 15px 0;"></div>
       
       <!-- Analysis Results -->
-      <div id="analysisResults" style="display: none; margin-top: 20px;">
+      <div id="analysisResults" style="display: none; margin-top: 15px;">
         <div class="analysis-box">
-          <h3>Analysis Results</h3>
-          <p id="bestMoveDisplay"></p>
-          <p id="evaluationDisplay"></p>
-          <p id="statusDisplay"></p>
+          <h3>Live Analysis</h3>
+          <div id="statusDisplay" style="font-size: 0.9em; color: #666; margin-bottom: 10px;"></div>
+          <div id="bestMoveDisplay" style="margin: 10px 0; padding: 10px; background: #f9f9f9; border-left: 3px solid #667eea; border-radius: 4px;"></div>
+          <div id="evaluationDisplay" style="margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 4px;"></div>
         </div>
       </div>
+      
+      <p style="margin-top: 15px; font-size: 0.85em; color: #999;">
+        <small>Play a game on <strong>lichess.org</strong> to see real-time analysis</small>
+      </p>
     </div>
   </div>
 
   <!-- Loading Spinner -->
   <div id="loadingSpinner" class="loading" style="display: none;">
     <div class="spinner"></div>
-    <p>Authenticating...</p>
+    <p>Connecting to Lichess...</p>
   </div>
 
-  <script src="../js/stockfish.js"></script>
+  <script src="../js/chess-loader.js"></script>
   <script src="../js/popup.js"></script>
 </body>
 </html>

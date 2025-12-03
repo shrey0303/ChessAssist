@@ -13,19 +13,23 @@ function fetchCurrentGameState(username) {
   return new Promise((resolve, reject) => {
     const apiUrl = `https://lichess.org/api/user/${username}/current-game`;
     
+    console.log('Fetching current game for:', username);
+    
     fetch(apiUrl, {
       headers: {
         'Accept': 'application/json'
       }
     })
     .then(response => {
+      console.log('Current game response status:', response.status);
       if (!response.ok) {
         throw new Error('No active game found');
       }
       return response.json();
     })
     .then(data => {
-      console.log('Current game state:', data);
+      console.log('Current game state full response:', data);
+      console.log('Game object:', data.game);
       resolve(data);
     })
     .catch(error => {
@@ -83,32 +87,43 @@ function analyzePositionWithStockfish(fen, depth = 6) {
       return;
     }
 
+    console.log('Analyzing FEN:', fen);
+    console.log('Depth:', depth);
+
     const params = new URLSearchParams({
       fen: fen,
       depth: Math.min(depth, 20) // Cap depth at 20
     });
 
     const apiUrl = `${STOCKFISH_API}?${params.toString()}`;
+    console.log('API URL:', apiUrl);
 
-    fetch(apiUrl)
+    fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
     .then(response => {
+      console.log('Stockfish response status:', response.status);
       if (!response.ok) {
-        throw new Error('Stockfish API error');
+        throw new Error(`Stockfish API HTTP error! status: ${response.status}`);
       }
       return response.json();
     })
     .then(data => {
-      console.log('Stockfish analysis:', data);
+      console.log('Stockfish raw response:', data);
       
-      // Parse response
+      // Parse response - handle different response formats
       const analysis = {
-        bestMove: data.bestmove || null,
-        evaluation: data.evaluation || null,
+        bestMove: data.bestmove || data.best || null,
+        evaluation: data.evaluation || data.score || null,
         mate: data.mate || null,
         depth: data.depth || depth,
         score: parseStockfishScore(data)
       };
       
+      console.log('Parsed analysis:', analysis);
       resolve(analysis);
     })
     .catch(error => {

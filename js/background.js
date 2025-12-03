@@ -1,6 +1,9 @@
 // Background service worker
 console.log('ChessAssist background service worker loaded');
 
+// Import inference module (Lichess streaming + Stockfish)
+// Note: inference.js is loaded via importScripts if needed, or included in manifest
+
 // Listen for messages from other scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Message received in background:', request.action);
@@ -15,6 +18,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('Fetching Lichess games:', request.username);
     fetchLichessGamesFromAPI(request.username, sendResponse);
     return true; // Keep channel open for async response
+  }
+  
+  if (request.action === 'setLichessToken') {
+    console.log('Setting Lichess token');
+    chrome.storage.local.set({ lichess_token: request.token }, () => {
+      sendResponse({ status: 'token_set' });
+    });
+    return true;
+  }
+  
+  if (request.action === 'startStreamMonitoring') {
+    console.log('Starting stream monitoring');
+    chrome.runtime.sendMessage({ action: 'startMonitoring' }, (response) => {
+      sendResponse(response);
+    });
+    return true;
+  }
+  
+  if (request.action === 'stopStreamMonitoring') {
+    console.log('Stopping stream monitoring');
+    chrome.runtime.sendMessage({ action: 'stopMonitoring' }, (response) => {
+      sendResponse(response);
+    });
+    return true;
   }
   
   if (request.action === 'process') {
