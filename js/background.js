@@ -2,7 +2,10 @@
 console.log('ChessAssist background service worker loaded');
 
 // Import inference module (Lichess streaming + Stockfish)
-// Note: inference.js is loaded via importScripts if needed, or included in manifest
+importScripts('inference.js');
+
+// Initialize inference when service worker starts
+initializeInference();
 
 // Listen for messages from other scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

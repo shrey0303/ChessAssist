@@ -10,7 +10,7 @@ const LICHESS_API = {
 let lichessToken = null;
 let eventStreamController = null;
 let eventStreamReader = null;
-let openBoardStreams = new Map(); // gameId -> { reader, chess, lastMovesCount }
+let openBoardStreams = new Map(); 
 
 // Analysis rate-limiting per game
 const ANALYZE_INTERVAL = 800; // ms between analyses

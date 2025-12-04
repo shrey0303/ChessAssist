@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ChessAssist - Streaming Integration Browser Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        h1 {
+            grid-column: 1 / -1;
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 32px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        
+        .panel h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            flex: 1;
+            min-width: 80px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #764ba2;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #663a8c;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .output {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            padding: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            color: #333;
+        }
+        
+        .output-item {
+            padding: 4px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .output-item:last-child {
+            border-bottom: none;
+        }
+        
+        .output-item.success {
+            color: #27ae60;
+        }
+        
+        .output-item.error {
+            color: #e74c3c;
+        }
+        
+        .output-item.info {
+            color: #3498db;
+        }
+        
+        .status-bar {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .status-bar.success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .status-bar.error {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .status-bar.loading {
+            background: #3498db;
+            color: white;
+        }
+        
+        .game-board {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+        
+        .game-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .info-item {
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .info-value {
+            color: #333;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .grid-2col {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ ChessAssist - Browser Streaming Test</h1>
+        
+        <!-- OAuth Login Section -->
+        <div class="panel" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; grid-column: 1 / -1; margin-bottom: 20px;">
+            <h2 style="color: white; border-bottom-color: rgba(255,255,255,0.3); border-bottom: 3px solid rgba(255,255,255,0.3); padding-bottom: 10px;">🔐 Step 1: Generate Your Token</h2>
+            
+            <p style="margin: 15px 0; color: rgba(255,255,255,0.95); line-height: 1.6;">
+                <strong>How to get your Lichess token:</strong><br>
+                1️⃣ Click the button below to open Lichess OAuth page<br>
+                2️⃣ Log in to Lichess (if needed)<br>
+                3️⃣ Click "Approve" to grant access<br>
+                4️⃣ Copy the token shown on the page<br>
+                5️⃣ Paste it in the "Token Input" field below
+            </p>
+            
+            <a href="https://lichess.org/account/oauth/token/create?scopes=stream:play-bot&description=ChessAssist%20Browser%20Test" 
+               target="_blank" 
+               class="btn-primary" 
+               style="display: inline-block; background: white !important; color: #667eea !important; padding: 12px 24px; text-decoration: none; font-weight: bold;">
+                📱 Generate Token on Lichess.org
+            </a>
+            
+            <p style="margin-top: 15px; color: rgba(255,255,255,0.85); font-size: 12px;">
+                This grants <strong>stream:play-bot</strong> permission to read your games in real-time and provide instant analysis.
+            </p>
+        </div>
+
+        <!-- Left Panel: Controls -->
+        <div class="panel">
+            <h2>🔑 Step 2: Store Your Token</h2>
+            
+            <div class="control-group">
+                <label>Paste your Lichess token here:</label>
+                <input type="password" id="tokenInput" placeholder="lichess_xxxxxxxxxxxxxxxxxxxx">
+                <small style="color: #999; margin-top: 5px; display: block;">Token will be stored securely in your browser's local storage</small>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="storeToken()">💾 Store Token Locally</button>
+                <button class="btn-secondary" onclick="testTokenValid()">✓ Verify Token Works</button>
+                <button class="btn-danger" onclick="clearStoredToken()">🗑 Clear Token</button>
+            </div>
+            
+            <div id="authOutput" class="output" style="margin-top: 10px; display: none;"></div>
+            
+            <div id="tokenStatus" style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px; display: none;">
+                <strong style="color: #667eea;">Token Status:</strong> <span id="tokenStatusText" style="color: #27ae60;">✓ Stored & Ready</span>
+            </div>
+            
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+            
+            <h2>📡 Stream Controls</h2>
+            
+            <div class="control-group">
+                <label>Event Stream Status:</label>
+                <div id="eventStreamStatus" class="status-bar">Not connected</div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="startEventStream()">Start Event Stream</button>
+                <button class="btn-danger" onclick="stopEventStream()" style="display: none;" id="stopEventBtn">Stop Event Stream</button>
+            </div>
+            
+            <div id="eventOutput" class="output" style="margin-top: 10px; display: none;"></div>
+            
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+            
+            <h2>🎮 Game Stream</h2>
+            
+            <div class="control-group">
+                <label>Game ID (from Lichess URL):</label>
+                <input type="text" id="gameIdInput" placeholder="e.g., BEOucQJo">
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="startBoardStream()">Connect to Game</button>
+                <button class="btn-danger" onclick="stopBoardStream()" style="display: none;" id="stopBoardBtn">Stop Game Stream</button>
+            </div>
+            
+            <div id="boardOutput" class="output" style="margin-top: 10px; display: none;"></div>
+        </div>
+        
+        <!-- Right Panel: Analysis & Results -->
+        <div class="panel">
+            <h2>🎯 Stockfish Analysis</h2>
+            
+            <div class="control-group">
+                <label>FEN Position:</label>
+                <textarea id="fenInput" rows="3" placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1">rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</textarea>
+            </div>
+            
+            <div class="control-group">
+                <label>Depth (1-20):</label>
+                <input type="number" id="depthInput" min="1" max="20" value="6">
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="analyzePosition()">Analyze</button>
+                <button class="btn-secondary" onclick="testRateLimiting()">Test Rate Limiting</button>
+            </div>
+            
+            <div id="analysisOutput" class="output" style="margin-top: 10px; display: none;"></div>
+            
+            <div id="analysisResult" class="game-info" style="margin-top: 15px;">
+                <div class="info-item">
+                    <div class="info-label">Best Move</div>
+                    <div class="info-value" id="bestMoveDisplay">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Evaluation</div>
+                    <div class="info-value" id="evalDisplay">-</div>
+                </div>
+            </div>
+            
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+            
+            <h2>📊 Live Game Analysis</h2>
+            
+            <div id="gameAnalysisPanel" class="game-board" style="display: none;">
+                <div class="game-info">
+                    <div class="info-item">
+                        <div class="info-label">White</div>
+                        <div class="info-value" id="whiteName">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Black</div>
+                        <div class="info-value" id="blackName">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Moves Made</div>
+                        <div class="info-value" id="moveCount">0</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Current FEN</div>
+                        <div class="info-value" id="currentFen" style="font-size: 10px;">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Best Move</div>
+                        <div class="info-value" id="gameAnalysisBestMove">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Evaluation</div>
+                        <div class="info-value" id="gameAnalysisEval">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Full-width: Integration Test -->
+        <div class="panel grid-2col">
+            <h2>🔗 Full Integration Test</h2>
+            
+            <p style="margin-bottom: 15px; color: #666; font-size: 13px;">
+                This test simulates the complete workflow: Token → Event Stream → Game Detection → Analysis
+            </p>
+            
+            <button class="btn-secondary" onclick="runFullIntegrationTest()" style="width: auto; padding: 10px 20px;">
+                Run Full Integration Test
+            </button>
+            
+            <div id="integrationOutput" class="output" style="margin-top: 15px; display: none; max-height: 200px;"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Global state
+        let token = localStorage.getItem('chessassist_token') || '';
+        let eventStreamReader = null;
+        let boardStreamReader = null;
+        let eventStreamActive = false;
+        let boardStreamActive = false;
+        let chess = new Chess();
+        
+        const ANALYZE_INTERVAL = 800; // ms
+        let lastAnalysisTime = 0;
+        
+        // ============================================================================
+        // LOGGING UTILITIES
+        // ============================================================================
+        
+        function log(elementId, message, type = 'info') {
+            const output = document.getElementById(elementId);
+            if (output.style.display === 'none') {
+                output.style.display = 'block';
+            }
+            
+            const item = document.createElement('div');
+            item.className = `output-item ${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : type === 'info' ? 'ℹ' : '→';
+            item.textContent = `[${timestamp}] ${icon} ${message}`;
+            
+            output.appendChild(item);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function setStatus(elementId, message, type = 'info') {
+            const statusBar = document.getElementById(elementId);
+            statusBar.textContent = message;
+            statusBar.className = `status-bar ${type}`;
+        }
+        
+        function clearOutput(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+        
+        // ============================================================================
+        // AUTHENTICATION
+        // ============================================================================
+        
+        function storeToken() {
+            const tokenInput = document.getElementById('tokenInput').value.trim();
+            if (!tokenInput) {
+                log('authOutput', 'Please enter a token', 'error');
+                return;
+            }
+            
+            token = tokenInput;
+            localStorage.setItem('chessassist_token', token);
+            log('authOutput', `Token stored: ${token.substring(0, 20)}...`, 'success');
+            setStatus('authOutput', 'Token stored successfully', 'success');
+            
+            // Show token status
+            const tokenStatus = document.getElementById('tokenStatus');
+            tokenStatus.style.display = 'block';
+            document.getElementById('tokenStatusText').textContent = `✓ Stored & Ready (${token.substring(0, 20)}...)`;
+            tokenStatus.style.background = '#d4edda';
+        }
+        
+        function clearStoredToken() {
+            localStorage.removeItem('chessassist_token');
+            token = '';
+            document.getElementById('tokenInput').value = '';
+            
+            const tokenStatus = document.getElementById('tokenStatus');
+            tokenStatus.style.display = 'block';
+            document.getElementById('tokenStatusText').textContent = 'Cleared';
+            tokenStatus.style.background = '#f8d7da';
+            tokenStatus.style.color = '#721c24';
+            
+            log('authOutput', 'Token cleared from storage', 'info');
+        }
+        
+        async function testTokenValid() {
+            clearOutput('authOutput');
+            log('authOutput', 'Verifying token...', 'info');
+            
+            if (!token) {
+                log('authOutput', 'No token found. Store a token first.', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('https://lichess.org/api/account', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('authOutput', `Token valid! User: ${data.username}`, 'success');
+                    log('authOutput', `ID: ${data.id}`, 'info');
+                    log('authOutput', `Joined: ${new Date(data.createdAt).toLocaleDateString()}`, 'info');
+                } else if (response.status === 401) {
+                    log('authOutput', 'Token invalid (401 Unauthorized)', 'error');
+                } else {
+                    log('authOutput', `Error: HTTP ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log('authOutput', `Connection error: ${error.message}`, 'error');
+            }
+        }
+        
+        // ============================================================================
+        // EVENT STREAM
+        // ============================================================================
+        
+        async function startEventStream() {
+            clearOutput('eventOutput');
+            
+            if (!token) {
+                log('eventOutput', 'No token. Store token first.', 'error');
+                return;
+            }
+            
+            if (eventStreamActive) {
+                log('eventOutput', 'Event stream already running', 'error');
+                return;
+            }
+            
+            log('eventOutput', 'Connecting to event stream...', 'info');
+            setStatus('eventStreamStatus', 'Connecting...', 'loading');
+            
+            try {
+                const response = await fetch('https://lichess.org/api/stream/event', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/x-ndjson'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                log('eventOutput', 'Connected to event stream', 'success');
+                setStatus('eventStreamStatus', '🟢 Connected', 'success');
+                
+                eventStreamActive = true;
+                document.getElementById('stopEventBtn').style.display = 'block';
+                
+                eventStreamReader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let eventCount = 0;
+                
+                while (eventStreamActive) {
+                    const { done, value } = await eventStreamReader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+                        
+                        try {
+                            const event = JSON.parse(line);
+                            eventCount++;
+                            log('eventOutput', `Event: ${event.type}`, 'success');
+                            
+                            if (event.type === 'gameStart') {
+                                log('eventOutput', `  → Game ID: ${event.game?.id}`, 'info');
+                            }
+                        } catch (e) {
+                            // Keep-alive or invalid JSON
+                        }
+                    }
+                }
+            } catch (error) {
+                log('eventOutput', `Error: ${error.message}`, 'error');
+                setStatus('eventStreamStatus', '🔴 Disconnected', 'error');
+                eventStreamActive = false;
+            }
+        }
+        
+        function stopEventStream() {
+            if (eventStreamReader) {
+                eventStreamReader.cancel();
+            }
+            eventStreamActive = false;
+            document.getElementById('stopEventBtn').style.display = 'none';
+            setStatus('eventStreamStatus', '🔴 Disconnected', 'error');
+            log('eventOutput', 'Event stream stopped', 'info');
+        }
+        
+        // ============================================================================
+        // BOARD STREAM
+        // ============================================================================
+        
+        async function startBoardStream() {
+            clearOutput('boardOutput');
+            
+            const gameId = document.getElementById('gameIdInput').value.trim();
+            if (!gameId) {
+                log('boardOutput', 'Please enter a game ID', 'error');
+                return;
+            }
+            
+            if (!token) {
+                log('boardOutput', 'No token. Store token first.', 'error');
+                return;
+            }
+            
+            if (boardStreamActive) {
+                log('boardOutput', 'Board stream already running', 'error');
+                return;
+            }
+            
+            log('boardOutput', `Connecting to game: ${gameId}`, 'info');
+            
+            try {
+                const response = await fetch(`https://lichess.org/api/board/game/stream/${gameId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/x-ndjson'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} - Game not found or ended`);
+                }
+                
+                log('boardOutput', 'Connected to board stream', 'success');
+                document.getElementById('gameAnalysisPanel').style.display = 'block';
+                
+                boardStreamActive = true;
+                document.getElementById('stopBoardBtn').style.display = 'block';
+                
+                boardStreamReader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                
+                while (boardStreamActive) {
+                    const { done, value } = await boardStreamReader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+                        
+                        try {
+                            const event = JSON.parse(line);
+                            
+                            if (event.type === 'gameFull') {
+                                log('boardOutput', `White: ${event.white?.name}`, 'info');
+                                log('boardOutput', `Black: ${event.black?.name}`, 'info');
+                                
+                                document.getElementById('whiteName').textContent = event.white?.name || '-';
+                                document.getElementById('blackName').textContent = event.black?.name || '-';
+                                
+                                // Load initial position
+                                if (event.initialFen && event.initialFen !== 'startpos') {
+                                    chess.load(event.initialFen);
+                                } else {
+                                    chess.reset();
+                                }
+                                
+                                // Apply existing moves
+                                if (event.state?.moves) {
+                                    const moves = event.state.moves.split(/\s+/).filter(Boolean);
+                                    moves.forEach(move => {
+                                        try {
+                                            chess.move(move, { sloppy: true });
+                                        } catch (e) {
+                                            console.warn('Invalid move:', move);
+                                        }
+                                    });
+                                }
+                                
+                                updateGameDisplay();
+                                triggerAnalysis(chess.fen());
+                                
+                            } else if (event.type === 'gameState') {
+                                log('boardOutput', `Moves: ${event.moves || '(none yet)'}`, 'info');
+                                
+                                // Apply new moves
+                                if (event.moves) {
+                                    const allMoves = event.moves.split(/\s+/).filter(Boolean);
+                                    const currentMoves = chess.moves({ verbose: true }).length;
+                                    
+                                    if (allMoves.length > currentMoves) {
+                                        for (let i = currentMoves; i < allMoves.length; i++) {
+                                            chess.move(allMoves[i], { sloppy: true });
+                                        }
+                                    }
+                                }
+                                
+                                updateGameDisplay();
+                                triggerAnalysis(chess.fen());
+                            }
+                        } catch (e) {
+                            // Parse error
+                        }
+                    }
+                }
+            } catch (error) {
+                log('boardOutput', `Error: ${error.message}`, 'error');
+                boardStreamActive = false;
+            }
+        }
+        
+        function stopBoardStream() {
+            if (boardStreamReader) {
+                boardStreamReader.cancel();
+            }
+            boardStreamActive = false;
+            document.getElementById('stopBoardBtn').style.display = 'none';
+            document.getElementById('gameAnalysisPanel').style.display = 'none';
+            log('boardOutput', 'Board stream stopped', 'info');
+        }
+        
+        function updateGameDisplay() {
+            const moves = chess.moves({ verbose: true });
+            document.getElementById('moveCount').textContent = moves.length;
+            document.getElementById('currentFen').textContent = chess.fen().substring(0, 50) + '...';
+        }
+        
+        // ============================================================================
+        // STOCKFISH ANALYSIS
+        // ============================================================================
+        
+        async function analyzePosition() {
+            clearOutput('analysisOutput');
+            
+            const fen = document.getElementById('fenInput').value.trim();
+            const depth = parseInt(document.getElementById('depthInput').value);
+            
+            if (!fen) {
+                log('analysisOutput', 'Please enter a FEN position', 'error');
+                return;
+            }
+            
+            log('analysisOutput', `Analyzing (depth ${depth})...`, 'info');
+            
+            try {
+                const startTime = Date.now();
+                const params = new URLSearchParams({ fen, depth: Math.min(depth, 20) });
+                
+                const response = await fetch(`https://stockfish.online/api/s/v2.php?${params}`);
+                const data = await response.json();
+                
+                const time = Date.now() - startTime;
+                
+                log('analysisOutput', `✓ Analysis complete (${time}ms)`, 'success');
+                log('analysisOutput', `Best move: ${data.bestmove}`, 'info');
+                log('analysisOutput', `Evaluation: ${data.evaluation}`, 'info');
+                
+                document.getElementById('bestMoveDisplay').textContent = data.bestmove || '-';
+                document.getElementById('evalDisplay').textContent = data.evaluation || '-';
+                
+            } catch (error) {
+                log('analysisOutput', `Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function triggerAnalysis(fen) {
+            const now = Date.now();
+            if (now - lastAnalysisTime < ANALYZE_INTERVAL) {
+                return; // Rate limit
+            }
+            
+            lastAnalysisTime = now;
+            
+            try {
+                const params = new URLSearchParams({ fen, depth: 6 });
+                const response = await fetch(`https://stockfish.online/api/s/v2.php?${params}`);
+                const data = await response.json();
+                
+                document.getElementById('gameAnalysisBestMove').textContent = data.bestmove || '-';
+                document.getElementById('gameAnalysisEval').textContent = data.evaluation || '-';
+            } catch (error) {
+                console.error('Analysis error:', error);
+            }
+        }
+        
+        async function testRateLimiting() {
+            clearOutput('analysisOutput');
+            log('analysisOutput', 'Testing rate limiting (5 rapid calls)...', 'info');
+            
+            const fen = document.getElementById('fenInput').value.trim();
+            const depth = parseInt(document.getElementById('depthInput').value);
+            
+            if (!fen) {
+                log('analysisOutput', 'Please enter a FEN position', 'error');
+                return;
+            }
+            
+            let lastTime = 0;
+            
+            for (let i = 0; i < 5; i++) {
+                const now = Date.now();
+                const timeSince = now - lastTime;
+                
+                if (timeSince < ANALYZE_INTERVAL && i > 0) {
+                    const waitTime = ANALYZE_INTERVAL - timeSince;
+                    log('analysisOutput', `Call ${i + 1}: Waiting ${waitTime}ms (rate limit)`, 'info');
+                    await new Promise(r => setTimeout(r, waitTime));
+                }
+                
+                log('analysisOutput', `Call ${i + 1}: Analyzing...`, 'info');
+                
+                try {
+                    const startTime = Date.now();
+                    const params = new URLSearchParams({ fen, depth: Math.min(depth, 10) });
+                    const response = await fetch(`https://stockfish.online/api/s/v2.php?${params}`);
+                    const data = await response.json();
+                    const time = Date.now() - startTime;
+                    
+                    lastTime = Date.now();
+                    log('analysisOutput', `✓ Call ${i + 1}: ${time}ms - ${data.bestmove}`, 'success');
+                } catch (error) {
+                    log('analysisOutput', `✗ Call ${i + 1}: ${error.message}`, 'error');
+                }
+            }
+            
+            log('analysisOutput', 'Rate limiting test complete', 'success');
+        }
+        
+        // ============================================================================
+        // FULL INTEGRATION TEST
+        // ============================================================================
+        
+        async function runFullIntegrationTest() {
+            clearOutput('integrationOutput');
+            document.getElementById('integrationOutput').style.display = 'block';
+            
+            log('integrationOutput', '=== FULL INTEGRATION TEST ===', 'info');
+            
+            // Test 1: Token
+            log('integrationOutput', 'Step 1: Verifying token...', 'info');
+            if (!token) {
+                log('integrationOutput', 'No token. Store token first.', 'error');
+                return;
+            }
+            log('integrationOutput', `Token: ${token.substring(0, 20)}...`, 'success');
+            
+            // Test 2: Lichess API
+            log('integrationOutput', 'Step 2: Testing Lichess API...', 'info');
+            try {
+                const res = await fetch('https://lichess.org/api/account', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    log('integrationOutput', `User: ${data.username}`, 'success');
+                } else {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+            } catch (error) {
+                log('integrationOutput', `Lichess API: ${error.message}`, 'error');
+                return;
+            }
+            
+            // Test 3: Stockfish
+            log('integrationOutput', 'Step 3: Testing Stockfish...', 'info');
+            try {
+                const fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+                const res = await fetch(`https://stockfish.online/api/s/v2.php?fen=${fen}&depth=6`);
+                const data = await res.json();
+                log('integrationOutput', `Best move: ${data.bestmove}`, 'success');
+            } catch (error) {
+                log('integrationOutput', `Stockfish: ${error.message}`, 'error');
+                return;
+            }
+            
+            log('integrationOutput', '=== ALL TESTS PASSED ===', 'success');
+        }
+        
+        // Load stored token on page load
+        window.addEventListener('load', () => {
+            if (token) {
+                document.getElementById('tokenInput').value = token;
+                document.getElementById('authOutput').style.display = 'block';
+                log('authOutput', `Token loaded from storage: ${token.substring(0, 20)}...`, 'success');
+                
+                // Show token status
+                const tokenStatus = document.getElementById('tokenStatus');
+                tokenStatus.style.display = 'block';
+                document.getElementById('tokenStatusText').textContent = `✓ Stored & Ready (${token.substring(0, 20)}...)`;
+                tokenStatus.style.background = '#d4edda';
+            }
+        });
+    </script>
+</body>
+</html>

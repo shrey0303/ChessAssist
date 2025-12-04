@@ -20,15 +20,8 @@
     }
   },
   "background": {
-    "service_worker": "js/background.js",
-    "scripts": ["js/inference.js"]
+    "service_worker": "js/background.js"
   },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["js/content.js"]
-    }
-  ],
   "icons": {
     "16": "images/icon-16.png",
     "48": "images/icon-48.png",
