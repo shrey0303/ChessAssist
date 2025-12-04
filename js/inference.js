@@ -1,19 +1,3 @@
-/**
- * inference.js - Lichess Board Stream + Stockfish Analysis Integration
- * 
- * This module handles:
- * 1. Global event stream monitoring (incoming games, challenges, etc.)
- * 2. Per-game board streams with real-time FEN updates
- * 3. Stockfish analysis with debouncing/rate-limiting
- * 4. Communication with UI via chrome.runtime.sendMessage
- */
-
-// ============================================================================
-// IMPORTS & CONFIG
-// ============================================================================
-
-// Ensure chess.js is loaded (service worker context)
-// If chess.js is available globally, it will be used; otherwise we note it
 const Chess = typeof Chess !== 'undefined' ? Chess : null;
 
 // Lichess API endpoints
